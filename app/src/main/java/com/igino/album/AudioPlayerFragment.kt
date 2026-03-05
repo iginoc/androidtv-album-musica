@@ -1,9 +1,11 @@
 package com.igino.album
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -46,6 +48,7 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var btnPlayPause: ImageButton
     private lateinit var btnSearchMetadata: ImageButton
     private lateinit var btnFavorite: ImageButton
+    private lateinit var btnYoutube: ImageButton
     private lateinit var progressBar: ProgressBar
     
     private var currentSmbUrl: String? = null
@@ -67,6 +70,7 @@ class AudioPlayerFragment : Fragment() {
         btnPlayPause = view.findViewById(R.id.btnPlayPause)
         btnSearchMetadata = view.findViewById(R.id.btnSearchMetadata)
         btnFavorite = view.findViewById(R.id.btnFavorite)
+        btnYoutube = view.findViewById(R.id.btnYoutube)
         progressBar = view.findViewById(R.id.songProgressBar)
 
         // Focus iniziale
@@ -99,6 +103,16 @@ class AudioPlayerFragment : Fragment() {
             player?.let { if (it.isPlaying) it.pause() else it.play() }
         }
         btnFavorite.setOnClickListener { toggleFavorite() }
+        btnYoutube.setOnClickListener { searchOnYoutube() }
+    }
+
+    private fun searchOnYoutube() {
+        player?.pause()
+        val title = songTitle.text.toString()
+        val artist = songArtist.text.toString()
+        val query = if (artist.isNotEmpty() && artist != "Artista sconosciuto") "$artist - $title" else title
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=$query"))
+        startActivity(intent)
     }
 
     private fun updateFavoriteIcon() {

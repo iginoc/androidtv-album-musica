@@ -67,15 +67,30 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
+            android:id="@+id/btnYoutube"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/player_button_bg"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:contentDescription="Cerca su Youtube"
+            android:scaleType="fitCenter"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_slideshow"
+            android:tint="@android:color/white" />
+
+        <ImageButton
             android:id="@+id/btnFavorite"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="@drawable/player_button_bg"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:contentDescription="Preferiti"
             android:scaleType="fitCenter"
+            android:padding="8dp"
             android:src="@android:drawable/btn_star_big_off"
             android:tint="@android:color/white" />
 
@@ -84,11 +99,12 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="@drawable/player_button_bg"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:contentDescription="Cerca Tag"
             android:scaleType="fitCenter"
+            android:padding="8dp"
             android:src="@android:drawable/ic_menu_search"
             android:tint="@android:color/white" />
 
@@ -96,11 +112,12 @@
             android:id="@+id/btnPlayPause"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="@drawable/player_button_bg"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:contentDescription="Play/Pause"
             android:scaleType="fitCenter"
+            android:padding="12dp"
             android:src="@android:drawable/ic_media_pause"
             android:tint="@android:color/white" />
     </LinearLayout>
