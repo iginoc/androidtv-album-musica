@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#101010"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Configurazione Samba"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <EditText
+            android:id="@+id/etUrl"
+            android:layout_width="match_parent"
+            android:maxWidth="500dp"
+            android:layout_height="wrap_content"
+            android:hint="smb://192.168.1.1/musica/"
+            android:textColor="@android:color/white"
+            android:textColorHint="#808080"
+            android:inputType="textUri"
+            android:singleLine="true"
+            android:backgroundTint="@android:color/white" />
+
+        <EditText
+            android:id="@+id/etUser"
+            android:layout_width="match_parent"
+            android:maxWidth="500dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Username"
+            android:textColor="@android:color/white"
+            android:textColorHint="#808080"
+            android:inputType="text"
+            android:singleLine="true"
+            android:backgroundTint="@android:color/white" />
+
+        <EditText
+            android:id="@+id/etPass"
+            android:layout_width="match_parent"
+            android:maxWidth="500dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Password"
+            android:textColor="@android:color/white"
+            android:textColorHint="#808080"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:backgroundTint="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:minWidth="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Salva e Connetti"
+            android:backgroundTint="@color/fastlane_background"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</ScrollView>
