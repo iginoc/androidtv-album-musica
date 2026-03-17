@@ -1,6 +1,7 @@
 package com.igino.album
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -84,12 +85,18 @@ class MainFragment : BrowseSupportFragment() {
         headersSupportFragment?.setOnHeaderClickedListener { _, row ->
             if (row is PageRow) toggleFolder(row)
         }
+
+        setOnSearchClickedListener {
+            val intent = Intent(requireContext(), SearchActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun setupUIElements() {
         headersState = HEADERS_ENABLED
         isHeadersTransitionOnBackEnabled = true
         brandColor = ContextCompat.getColor(requireContext(), R.color.fastlane_background)
+        badgeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.app_icon_your_company)
         mProgressBarManager.setRootView(view as ViewGroup)
     }
 
@@ -312,144 +319,144 @@ class MainFragment : BrowseSupportFragment() {
     companion object {
         private const val TAG = "MainFragment"
     }
-}
 
-class GridFragment : VerticalGridSupportFragment() {
-    private lateinit var mAdapter: ArrayObjectAdapter
-    private val mHandler = Handler(Looper.myLooper()!!)
+    class GridFragment : VerticalGridSupportFragment() {
+        private lateinit var mAdapter: ArrayObjectAdapter
+        private val mHandler = Handler(Looper.myLooper()!!)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val gridPresenter = VerticalGridPresenter(FocusHighlight.ZOOM_FACTOR_NONE, false).apply { 
-            numberOfColumns = 1 
-            shadowEnabled = false
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            val gridPresenter = VerticalGridPresenter(FocusHighlight.ZOOM_FACTOR_NONE, false).apply { 
+                numberOfColumns = 1 
+                shadowEnabled = false
+            }
+            setGridPresenter(gridPresenter)
+            mAdapter = ArrayObjectAdapter(ListRowItemPresenter())
+            adapter = mAdapter
+            setupEventListeners()
+            loadData()
         }
-        setGridPresenter(gridPresenter)
-        mAdapter = ArrayObjectAdapter(ListRowItemPresenter())
-        adapter = mAdapter
-        setupEventListeners()
-        loadData()
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+        }
 
-    private fun setupEventListeners() {
-        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
-            if (item is SmbFileWrapper) {
-                findMainFragment()?.playSong(item.path)
+        private fun setupEventListeners() {
+            onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
+                if (item is SmbFileWrapper) {
+                    findMainFragment()?.playSong(item.path)
+                }
             }
         }
-    }
 
-    private fun findMainFragment(): MainFragment? {
-        var parent = parentFragment
-        while (parent != null) {
-            if (parent is MainFragment) return parent
-            parent = parent.parentFragment
-        }
-        return null
-    }
-
-    fun loadData() {
-        val path = arguments?.getString("PATH") ?: return
-        if (path == "favorites://") {
-            loadFavorites()
-            return
-        }
-
-        val user = arguments?.getString("USER") ?: ""
-        val pass = arguments?.getString("PASS") ?: ""
-        thread {
-            try {
-                val baseProps = Properties().apply {
-                    setProperty("jcifs.smb.client.enableSMB2", "true")
-                    setProperty("jcifs.smb.client.dfs.disabled", "false")
-                }
-                val context = BaseContext(PropertyConfiguration(baseProps)).withCredentials(NtlmPasswordAuthenticator(null, user, pass))
-                val smbFile = SmbFile(path, context)
-                val files = smbFile.listFiles() ?: emptyArray()
-                
-                val items = files.filter { !it.isDirectory && it.name.lowercase().endsWith(".mp3") }
-                    .map { 
-                        val name = it.name.replace("/", "")
-                        val canonicalPath = it.canonicalPath
-                        SmbFileWrapper(name, canonicalPath) 
-                    }
-                    .sortedBy { it.name.lowercase() }
-                
-                val folderName = smbFile.name.removeSuffix("/").substringAfterLast("/")
-
-                mHandler.post {
-                    mAdapter.clear()
-                    mAdapter.addAll(0, items)
-                    findMainFragment()?.updateTitle(folderName, items.size)
-                }
-            } catch (e: Exception) { Log.e("GridFragment", "Error", e) }
-        }
-    }
-
-    private fun loadFavorites() {
-        val context = context ?: return
-        val prefs = context.getSharedPreferences("favorites", Context.MODE_PRIVATE)
-        val favorites = prefs.getStringSet("urls", emptySet()) ?: emptySet()
-        val items = favorites.filterNotNull().map { url ->
-            val name = url.substringAfterLast("/").replace(".mp3", "")
-            SmbFileWrapper(name, url)
-        }.sortedBy { it.name.lowercase() }
-
-        mHandler.post {
-            mAdapter.clear()
-            mAdapter.addAll(0, items)
-            findMainFragment()?.updateTitle("⭐ Preferiti", items.size)
-        }
-    }
-
-    data class SmbFileWrapper(val name: String, val path: String)
-
-    private inner class ListRowItemPresenter : Presenter() {
-        override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
-            val textView = TextView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100)
-                isFocusable = true
-                isFocusableInTouchMode = true
-                setTextColor(Color.WHITE)
-                textSize = 20f
-                gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                textAlignment = View.TEXT_ALIGNMENT_VIEW_START
-                setPadding(48, 0, 48, 0)
-                setSingleLine(true)
-                ellipsize = android.text.TextUtils.TruncateAt.END
-                
-                val outValue = android.util.TypedValue()
-                context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-                setBackgroundResource(outValue.resourceId)
-
-                setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                        (context as? MainActivity)?.focusPlayer()
-                        return@setOnKeyListener true
-                    }
-                    false
-                }
+        private fun findMainFragment(): MainFragment? {
+            var parent = parentFragment
+            while (parent != null) {
+                if (parent is MainFragment) return parent
+                parent = parent.parentFragment
             }
-            return ViewHolder(textView)
+            return null
         }
-        override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
-            val wrapper = item as? SmbFileWrapper ?: return
-            (viewHolder.view as TextView).text = "🎵  ${wrapper.name}"
-        }
-        override fun onUnbindViewHolder(viewHolder: ViewHolder) {}
-    }
 
-    companion object {
-        fun newInstance(path: String, user: String, pass: String): GridFragment {
-            return GridFragment().apply {
-                arguments = Bundle().apply {
-                    putString("PATH", path)
-                    putString("USER", user)
-                    putString("PASS", pass)
+        fun loadData() {
+            val path = arguments?.getString("PATH") ?: return
+            if (path == "favorites://") {
+                loadFavorites()
+                return
+            }
+
+            val user = arguments?.getString("USER") ?: ""
+            val pass = arguments?.getString("PASS") ?: ""
+            thread {
+                try {
+                    val baseProps = Properties().apply {
+                        setProperty("jcifs.smb.client.enableSMB2", "true")
+                        setProperty("jcifs.smb.client.dfs.disabled", "false")
+                    }
+                    val context = BaseContext(PropertyConfiguration(baseProps)).withCredentials(NtlmPasswordAuthenticator(null, user, pass))
+                    val smbFile = SmbFile(path, context)
+                    val files = smbFile.listFiles() ?: emptyArray()
+                    
+                    val items = files.filter { !it.isDirectory && it.name.lowercase().endsWith(".mp3") }
+                        .map { 
+                            val name = it.name.replace("/", "")
+                            val canonicalPath = it.canonicalPath
+                            SmbFileWrapper(name, canonicalPath) 
+                        }
+                        .sortedBy { it.name.lowercase() }
+                    
+                    val folderName = smbFile.name.removeSuffix("/").substringAfterLast("/")
+
+                    mHandler.post {
+                        mAdapter.clear()
+                        mAdapter.addAll(0, items)
+                        findMainFragment()?.updateTitle(folderName, items.size)
+                    }
+                } catch (e: Exception) { Log.e("GridFragment", "Error", e) }
+            }
+        }
+
+        private fun loadFavorites() {
+            val context = context ?: return
+            val prefs = context.getSharedPreferences("favorites", Context.MODE_PRIVATE)
+            val favorites = prefs.getStringSet("urls", emptySet()) ?: emptySet()
+            val items = favorites.filterNotNull().map { url ->
+                val name = url.substringAfterLast("/").replace(".mp3", "")
+                SmbFileWrapper(name, url)
+            }.sortedBy { it.name.lowercase() }
+
+            mHandler.post {
+                mAdapter.clear()
+                mAdapter.addAll(0, items)
+                findMainFragment()?.updateTitle("⭐ Preferiti", items.size)
+            }
+        }
+
+        data class SmbFileWrapper(val name: String, val path: String)
+
+        inner class ListRowItemPresenter : Presenter() {
+            override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
+                val textView = TextView(parent.context).apply {
+                    layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100)
+                    isFocusable = true
+                    isFocusableInTouchMode = true
+                    setTextColor(Color.WHITE)
+                    textSize = 20f
+                    gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    setPadding(48, 0, 48, 0)
+                    setSingleLine(true)
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    
+                    val outValue = android.util.TypedValue()
+                    context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+                    setBackgroundResource(outValue.resourceId)
+
+                    setOnKeyListener { _, keyCode, event ->
+                        if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                            (context as? MainActivity)?.focusPlayer()
+                            return@setOnKeyListener true
+                        }
+                        false
+                    }
+                }
+                return ViewHolder(textView)
+            }
+            override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
+                val wrapper = item as? SmbFileWrapper ?: return
+                (viewHolder.view as TextView).text = "🎵  ${wrapper.name}"
+            }
+            override fun onUnbindViewHolder(viewHolder: ViewHolder) {}
+        }
+
+        companion object {
+            fun newInstance(path: String, user: String, pass: String): GridFragment {
+                return GridFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("PATH", path)
+                        putString("USER", user)
+                        putString("PASS", pass)
+                    }
                 }
             }
         }

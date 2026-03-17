@@ -33,7 +33,7 @@ class MusicContentFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapt
         super.onViewCreated(view, savedInstanceState)
         
         if (savedInstanceState == null && mPath != null) {
-            val gridFragment = GridFragment.newInstance(mPath!!, mUser ?: "", mPass ?: "")
+            val gridFragment = MainFragment.GridFragment.newInstance(mPath!!, mUser ?: "", mPass ?: "")
             childFragmentManager.beginTransaction()
                 .replace(R.id.list_container, gridFragment)
                 .commit()
@@ -51,7 +51,7 @@ class MusicContentFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapt
 
     fun refreshIfFavorites() {
         if (mPath == "favorites://") {
-            val gridFrag = childFragmentManager.findFragmentById(R.id.list_container) as? GridFragment
+            val gridFrag = childFragmentManager.findFragmentById(R.id.list_container) as? MainFragment.GridFragment
             gridFrag?.loadData()
         }
     }
